@@ -4,5 +4,8 @@ __pycache__/
 # Configurations
 configs/
 
+# UIs
+ui/
+
 # Archived Stuff
 backups/
