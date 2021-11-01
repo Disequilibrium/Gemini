@@ -13,7 +13,7 @@ class Ui_mainWindow(object):
         mainWindow.setObjectName("mainWindow")
         mainWindow.setWindowModality(QtCore.Qt.NonModal)
         mainWindow.setEnabled(True)
-        mainWindow.setFixedSize(370, 330)
+        mainWindow.setFixedSize(370, 335)
         mainWindow.setAnimated(True)
         self.centralwidget = QtWidgets.QWidget(mainWindow)
         self.centralwidget.setAutoFillBackground(False)
@@ -27,9 +27,14 @@ class Ui_mainWindow(object):
         self.mainBotPushButton.setObjectName("mainBotPushButton")
         self.mainServerTableWidget = QtWidgets.QTableWidget(self.centralwidget)
         self.mainServerTableWidget.setGeometry(QtCore.QRect(30, 31, 311, 171))
+        self.mainServerTableWidget.setWhatsThis("")
         self.mainServerTableWidget.setRowCount(0)
+        self.mainServerTableWidget.setColumnCount(2)
         self.mainServerTableWidget.setObjectName("mainServerTableWidget")
-        self.mainServerTableWidget.setColumnCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.mainServerTableWidget.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.mainServerTableWidget.setHorizontalHeaderItem(1, item)
         self.mainServerLabel = QtWidgets.QLabel(self.centralwidget)
         self.mainServerLabel.setGeometry(QtCore.QRect(30, 10, 281, 20))
         font = QtGui.QFont()
@@ -57,6 +62,7 @@ class Ui_mainWindow(object):
         self.mainStatusbar.setObjectName("mainStatusbar")
         mainWindow.setStatusBar(self.mainStatusbar)
         self.actionBot_Setup = QtWidgets.QAction(mainWindow)
+        self.actionBot_Setup.setEnabled(True)
         self.actionBot_Setup.setObjectName("actionBot_Setup")
         self.actionServer_to_Server = QtWidgets.QAction(mainWindow)
         self.actionServer_to_Server.setObjectName("actionServer_to_Server")
@@ -72,6 +78,7 @@ class Ui_mainWindow(object):
         self.mainMenuSettings.addAction(self.actionAbout)
         self.mainMenuBackup.addAction(self.actionServer_to_Server)
         self.mainMenuBackup.addAction(self.actionServer_to_Local_Disk)
+        self.mainMenuBackup.addAction(self.actionLocal_Disk_to_Server)
         self.mainMenuBackup.addAction(self.actionEstablish_LiveSync)
         self.mainMenuBar.addAction(self.mainMenuBackup.menuAction())
         self.mainMenuBar.addAction(self.mainMenuSettings.menuAction())
@@ -83,11 +90,22 @@ class Ui_mainWindow(object):
         self.actionAbout.triggered.connect(self.openAbout)
         self.actionBot_Setup.triggered.connect(self.openBotSetup)
         self.mainBotPushButton.clicked.connect(self.startGemini)
+        self.mainRefreshPushButton.clicked.connect(self.refreshServerList)
+
+        self.mainRefreshPushButton.setEnabled(False)
+        self.actionServer_to_Server.setEnabled(False)
+        self.actionServer_to_Local_Disk.setEnabled(False)
+        self.actionLocal_Disk_to_Server.setEnabled(False)
+        self.actionEstablish_LiveSync.setEnabled(False)
 
     def retranslateUi(self, mainWindow):
         _translate = QtCore.QCoreApplication.translate
         mainWindow.setWindowTitle(_translate("mainWindow", "Gemini"))
-        self.mainBotPushButton.setText(_translate("mainWindow", "Start Gemini"))
+        self.mainBotPushButton.setText(_translate("mainWindow", "Gemini Status: Offline"))
+        item = self.mainServerTableWidget.horizontalHeaderItem(0)
+        item.setText(_translate("mainWindow", "Server ID"))
+        item = self.mainServerTableWidget.horizontalHeaderItem(1)
+        item.setText(_translate("mainWindow", "Server Name"))
         self.mainServerLabel.setText(_translate("mainWindow", "Server List:"))
         self.mainRefreshPushButton.setText(_translate("mainWindow", "Refresh"))
         self.mainMenuSettings.setTitle(_translate("mainWindow", "Settings"))
@@ -96,6 +114,7 @@ class Ui_mainWindow(object):
         self.actionServer_to_Server.setText(_translate("mainWindow", "Clone from Server to Server..."))
         self.actionServer_to_Local_Disk.setText(_translate("mainWindow", "Backup from Server to Local Disk..."))
         self.actionLocal_Disk_to_Server.setText(_translate("mainWindow", "Restore from Local Disk to Server..."))
+
         self.actionEstablish_LiveSync.setText(_translate("mainWindow", "Establish LiveSync..."))
         self.actionAbout.setText(_translate("mainWindow", "About..."))
 
@@ -116,6 +135,11 @@ class Ui_mainWindow(object):
     def startGemini(self):
         try:
             backend.startGemini(self.mainBotPushButton)
+            self.mainRefreshPushButton.setEnabled(True)
+            self.actionServer_to_Server.setEnabled(True)
+            self.actionServer_to_Local_Disk.setEnabled(True)
+            self.actionLocal_Disk_to_Server.setEnabled(True)
+            self.actionEstablish_LiveSync.setEnabled(True)
         except backend.InvalidToken:
             msg = QMessageBox()
             msg.setWindowTitle("Error")
@@ -141,6 +165,15 @@ class Ui_mainWindow(object):
             self.mainBotPushButton.setText("Start Gemini")
             self.mainBotPushButton.setEnabled(True)
 
+    def refreshServerList(self):
+        try:
+            backend.refreshServerList(self.mainRefreshPushButton, self.mainServerTableWidget, QtWidgets)
+        except backend.BotExistsInNoServers:
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning")
+            msg.setText("Bot is not a member of any Discord Servers.")
+            msg.setIcon(QMessageBox.Warning)
+            msg.exec_()
 
 ## BOT SETUP DIALOG CLASS ##
 class Ui_SetupDialog(object):

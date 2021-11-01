@@ -22,6 +22,7 @@ from threading import Thread
 ## GLOBAL VARIABLES ##
 intents = intents = discord.Intents.default()
 bot = commands.Bot(command_prefix = '=/=', intents=intents)
+
 ## GLOBAL VARIABLES ##
 
 ## EXCEPTION CLASSES ##
@@ -30,6 +31,8 @@ class InvalidToken(Exception):
 class ConfigDoesNotExist(Exception):
     pass
 class ConnectionFailed(Exception):
+    pass
+class BotExistsInNoServers(Exception):
     pass
 ## EXCEPTION CLASSES ##
 
@@ -77,12 +80,37 @@ def saveBotSetup(saveButton, keyTextField, timeSpinBox):
         configFile.write(json.dumps(setup, indent = 4))
         configFile.close()
 
+# Refresh the list of servers on the Main Window
+def refreshServerList(refreshButton, tableWidget, qt):
+
+    servers = bot.guilds
+    if len(servers) == 0:
+        raise BotExistsInNoServers
+
+    row = 0
+    tableWidget.setRowCount(len(servers))
+
+    for server in servers:
+        tableWidget.setItem(row, 0, qt.QTableWidgetItem(str(server.id)))
+        tableWidget.setItem(row, 1, qt.QTableWidgetItem(server.name))
+        row += 1
+
+
 # Validate the format of the given API token
 # XXXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX
 # Case Un-sensitive alphanumeric
 def validateAPIToken(token):
-    if not bool(re.match('([a-zA-Z0-9]{24})\.([a-zA-Z0-9]{6})\.([a-zA-Z0-9]{27})', token)):
+    if not bool(re.match('^([a-zA-Z0-9_-]{24})\.([a-zA-Z0-9_-]{6})\.([a-zA-Z0-9_-]{27})$', token)):
         raise InvalidToken
+
+async def get_chat_id(name):
+    await asyncio.sleep(3)
+    return "lel"
+
+def await_this(function):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return loop.run_until_complete(function)
 
 # Triggered when bot is started
 @bot.event
