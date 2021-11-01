@@ -5,6 +5,7 @@
 import backend
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 ## MAIN WINDOW CLASS ##
 class Ui_mainWindow(object):
@@ -61,6 +62,8 @@ class Ui_mainWindow(object):
         self.actionServer_to_Server.setObjectName("actionServer_to_Server")
         self.actionServer_to_Local_Disk = QtWidgets.QAction(mainWindow)
         self.actionServer_to_Local_Disk.setObjectName("actionServer_to_Local_Disk")
+        self.actionLocal_Disk_to_Server = QtWidgets.QAction(mainWindow)
+        self.actionLocal_Disk_to_Server.setObjectName("actionLocal_Disk_to_Server")
         self.actionEstablish_LiveSync = QtWidgets.QAction(mainWindow)
         self.actionEstablish_LiveSync.setObjectName("actionEstablish_LiveSync")
         self.actionAbout = QtWidgets.QAction(mainWindow)
@@ -78,18 +81,21 @@ class Ui_mainWindow(object):
 
         ## MainWindow Functionalities ##
         self.actionAbout.triggered.connect(self.openAbout)
+        self.actionBot_Setup.triggered.connect(self.openBotSetup)
+        self.mainBotPushButton.clicked.connect(self.startGemini)
 
     def retranslateUi(self, mainWindow):
         _translate = QtCore.QCoreApplication.translate
         mainWindow.setWindowTitle(_translate("mainWindow", "Gemini"))
-        self.mainBotPushButton.setText(_translate("mainWindow", "Gemini Status: Offline"))
+        self.mainBotPushButton.setText(_translate("mainWindow", "Start Gemini"))
         self.mainServerLabel.setText(_translate("mainWindow", "Server List:"))
         self.mainRefreshPushButton.setText(_translate("mainWindow", "Refresh"))
         self.mainMenuSettings.setTitle(_translate("mainWindow", "Settings"))
         self.mainMenuBackup.setTitle(_translate("mainWindow", "Backup"))
         self.actionBot_Setup.setText(_translate("mainWindow", "Bot Setup..."))
-        self.actionServer_to_Server.setText(_translate("mainWindow", "Server to Server..."))
-        self.actionServer_to_Local_Disk.setText(_translate("mainWindow", "Server to Local Disk..."))
+        self.actionServer_to_Server.setText(_translate("mainWindow", "Clone from Server to Server..."))
+        self.actionServer_to_Local_Disk.setText(_translate("mainWindow", "Backup from Server to Local Disk..."))
+        self.actionLocal_Disk_to_Server.setText(_translate("mainWindow", "Restore from Local Disk to Server..."))
         self.actionEstablish_LiveSync.setText(_translate("mainWindow", "Establish LiveSync..."))
         self.actionAbout.setText(_translate("mainWindow", "About..."))
 
@@ -100,6 +106,119 @@ class Ui_mainWindow(object):
         AboutDialog.exec_()
         AboutDialog.show()
 
+    def openBotSetup(self):
+        SetupDialog = QtWidgets.QDialog()
+        SetupDialog.ui = Ui_SetupDialog()
+        SetupDialog.ui.setupUi(SetupDialog)
+        SetupDialog.exec_()
+        SetupDialog.show()
+
+    def startGemini(self):
+        try:
+            backend.startGemini(self.mainBotPushButton)
+        except backend.InvalidToken:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Invalid API Key.")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+            self.mainBotPushButton.setText("Start Gemini")
+            self.mainBotPushButton.setEnabled(True)
+        except backend.ConfigDoesNotExist:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Config File does not exist.\nTry setting up the Bot first.")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+            self.mainBotPushButton.setText("Start Gemini")
+            self.mainBotPushButton.setEnabled(True)
+        except backend.ConnectionFailed:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Connection Failed.\nEither you should:\n\t- Fix the API Key and restart the application\n\t- Increase the Connection Timeout")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+            self.mainBotPushButton.setText("Start Gemini")
+            self.mainBotPushButton.setEnabled(True)
+
+
+## BOT SETUP DIALOG CLASS ##
+class Ui_SetupDialog(object):
+    def setupUi(self, SetupDialog):
+        SetupDialog.setObjectName("SetupDialog")
+        SetupDialog.setFixedSize(401, 120)
+        self.setupLineEdit = QtWidgets.QLineEdit(SetupDialog)
+        self.setupLineEdit.setGeometry(QtCore.QRect(20, 30, 361, 20))
+        self.setupLineEdit.setInputMask("")
+        self.setupLineEdit.setText("")
+        self.setupLineEdit.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.setupLineEdit.setObjectName("setupLineEdit")
+        self.label = QtWidgets.QLabel(SetupDialog)
+        self.label.setGeometry(QtCore.QRect(150, 10, 91, 16))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.setupSavePushButton = QtWidgets.QPushButton(SetupDialog)
+        self.setupSavePushButton.setGeometry(QtCore.QRect(140, 90, 111, 23))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.setupSavePushButton.setFont(font)
+        self.setupSavePushButton.setObjectName("setupSavePushButton")
+        self.label_2 = QtWidgets.QLabel(SetupDialog)
+        self.label_2.setGeometry(QtCore.QRect(90, 60, 121, 16))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName("label_2")
+        self.timeoutSpinBox = QtWidgets.QSpinBox(SetupDialog)
+        self.timeoutSpinBox.setGeometry(QtCore.QRect(220, 60, 42, 16))
+        self.timeoutSpinBox.setProperty("value", 5)
+        self.timeoutSpinBox.setObjectName("timeoutSpinBox")
+        self.label_3 = QtWidgets.QLabel(SetupDialog)
+        self.label_3.setGeometry(QtCore.QRect(270, 60, 41, 16))
+        font = QtGui.QFont()
+        font.setBold(False)
+        font.setWeight(50)
+        self.label_3.setFont(font)
+        self.label_3.setObjectName("label_3")
+
+        self.retranslateUi(SetupDialog)
+        QtCore.QMetaObject.connectSlotsByName(SetupDialog)
+
+        ## SetupDialog Functionalities ##
+        self.setupSavePushButton.clicked.connect(self.saveBotSetup)
+        self.setupLineEdit.textChanged.connect(self.enableSaveButton)
+        self.timeoutSpinBox.textChanged.connect(self.enableSaveButton)
+
+    def retranslateUi(self, SetupDialog):
+        _translate = QtCore.QCoreApplication.translate
+        SetupDialog.setWindowTitle(_translate("SetupDialog", "Bot Setup"))
+        self.setupLineEdit.setPlaceholderText(_translate("SetupDialog", "XXXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX"))
+        self.label.setText(_translate("SetupDialog", "Bot API Token:"))
+        self.setupSavePushButton.setText(_translate("SetupDialog", "Save"))
+        self.label_2.setText(_translate("SetupDialog", "Connection Timeout:"))
+        self.label_3.setText(_translate("SetupDialog", "Seconds"))
+
+    def enableSaveButton(self):
+        self.setupSavePushButton.setText("Save")
+        self.setupSavePushButton.setEnabled(True)
+
+    def saveBotSetup(self):
+        try:
+            backend.saveBotSetup(self.setupSavePushButton, self.setupLineEdit, self.timeoutSpinBox)
+            self.setupSavePushButton.setText("Saved!")
+            self.setupSavePushButton.setEnabled(False)
+
+        except backend.InvalidToken:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Invalid API Key.")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
 
 ## ABOUT DIALOG CLASS ##
 class Ui_AboutDialog(object):
@@ -139,7 +258,12 @@ def start():
     app = QtWidgets.QApplication(sys.argv)
     app.setStyleSheet(qdarkstyle.load_stylesheet())
     mainWindow = QtWidgets.QMainWindow()
+    global ui
     ui = Ui_mainWindow()
     ui.setupUi(mainWindow)
     mainWindow.show()
-    sys.exit(app.exec_())
+    ret = app.exec_()
+
+    # Things to do before quitting the application
+
+    sys.exit(ret)
