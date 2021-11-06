@@ -34,15 +34,24 @@ class ConnectionFailed(Exception):
     pass
 class BotExistsInNoServers(Exception):
     pass
+class EmptyField(Exception):
+    pass
+class InvalidFieldFormat(Exception):
+    pass
+class BotNotPresentInServer(Exception):
+    pass
+class SameSourceAndTarget(Exception):
+    pass
 ## EXCEPTION CLASSES ##
 
 # Bot launch procedure
-def startGemini(startButton):
+def startGemini(mainDialog):
 
     # Check if config file exists
     if not os.path.exists("../../configs/configs.json"):
         raise ConfigDoesNotExist
 
+    startButton = mainDialog.mainBotPushButton
     startButton.setEnabled(False)
     startButton.setText("Initializing Gemini...")
 
@@ -66,7 +75,10 @@ def startGemini(startButton):
         raise ConnectionFailed
 
 # Save the given API token to the config file
-def saveBotSetup(saveButton, keyTextField, timeSpinBox):
+def saveBotSetup(setupDialog):
+    keyTextField = setupDialog.setupLineEdit
+    timeSpinBox = setupDialog.timeoutSpinBox
+
     token = keyTextField.text().replace(' ','').replace('\t','')
     timeout = int(timeSpinBox.text())
     validateAPIToken(token)
@@ -81,20 +93,21 @@ def saveBotSetup(saveButton, keyTextField, timeSpinBox):
         configFile.close()
 
 # Refresh the list of servers on the Main Window
-def refreshServerList(refreshButton, tableWidget, qt):
+def refreshServerList(mainDialog, qtWidgets):
 
     servers = bot.guilds
     if len(servers) == 0:
         raise BotExistsInNoServers
 
+    tableWidget = mainDialog.mainServerTableWidget
+
     row = 0
     tableWidget.setRowCount(len(servers))
 
     for server in servers:
-        tableWidget.setItem(row, 0, qt.QTableWidgetItem(str(server.id)))
-        tableWidget.setItem(row, 1, qt.QTableWidgetItem(server.name))
+        tableWidget.setItem(row, 0, qtWidgets.QTableWidgetItem(str(server.id)))
+        tableWidget.setItem(row, 1, qtWidgets.QTableWidgetItem(server.name))
         row += 1
-
 
 # Validate the format of the given API token
 # XXXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -103,10 +116,34 @@ def validateAPIToken(token):
     if not bool(re.match('^([a-zA-Z0-9_-]{24})\.([a-zA-Z0-9_-]{6})\.([a-zA-Z0-9_-]{27})$', token)):
         raise InvalidToken
 
-async def get_chat_id(name):
-    await asyncio.sleep(3)
-    return "lel"
+# Server to Server Clone Function
+def startCloning(ssDialog):
+    sourceServerID = ssDialog.sourceLineEdit.text().replace(' ','').replace('\t','')
+    targetServerID = ssDialog.targetLineEdit.text().replace(' ','').replace('\t','')
+    messageBool = ssDialog.messageCheckBox.isChecked()
+    numberOfMessages = ssDialog.messageSpinBox.text().replace(' ','').replace('\t','')
+    attachmentBool = ssDialog.attachmentCheckBox.isChecked()
+    emojiBool = ssDialog.emojiCheckBox.isChecked()
+    roleBool = ssDialog.rolesCheckBox.isChecked()
 
+    # Checking for Exceptions
+    if len(sourceServerID) == 0 or len(targetServerID) == 0:
+        raise EmptyField
+    if not bool(re.match('^[0-9]*$', sourceServerID)) or not bool(re.match('^[0-9]*$', targetServerID)):
+        raise InvalidFieldFormat
+
+    serverIDList = []
+    for server in bot.guilds:
+        serverIDList.append(server.id)
+    print(serverIDList)
+    if (not int(sourceServerID) in serverIDList) or (not int(targetServerID) in serverIDList):
+        raise BotNotPresentInServer
+    if int(sourceServerID) == int(targetServerID):
+        raise SameSourceAndTarget
+
+    progressDialog = ssDialog.startProgress()
+
+# This Function serves as await, without having to turn the whole function into an async one
 def await_this(function):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)

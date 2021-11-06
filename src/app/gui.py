@@ -89,6 +89,7 @@ class Ui_mainWindow(object):
         ## MainWindow Functionalities ##
         self.actionAbout.triggered.connect(self.openAbout)
         self.actionBot_Setup.triggered.connect(self.openBotSetup)
+        self.actionServer_to_Server.triggered.connect(self.openSSDialog)
         self.mainBotPushButton.clicked.connect(self.startGemini)
         self.mainRefreshPushButton.clicked.connect(self.refreshServerList)
 
@@ -132,9 +133,16 @@ class Ui_mainWindow(object):
         SetupDialog.exec_()
         SetupDialog.show()
 
+    def openSSDialog(self):
+        SSDialog = QtWidgets.QDialog()
+        SSDialog.ui = Ui_SSDialog()
+        SSDialog.ui.setupUi(SSDialog)
+        SSDialog.exec_()
+        SSDialog.show()
+
     def startGemini(self):
         try:
-            backend.startGemini(self.mainBotPushButton)
+            backend.startGemini(self)
             self.mainRefreshPushButton.setEnabled(True)
             self.actionServer_to_Server.setEnabled(True)
             self.actionServer_to_Local_Disk.setEnabled(True)
@@ -167,7 +175,7 @@ class Ui_mainWindow(object):
 
     def refreshServerList(self):
         try:
-            backend.refreshServerList(self.mainRefreshPushButton, self.mainServerTableWidget, QtWidgets)
+            backend.refreshServerList(self, QtWidgets)
         except backend.BotExistsInNoServers:
             msg = QMessageBox()
             msg.setWindowTitle("Warning")
@@ -242,7 +250,7 @@ class Ui_SetupDialog(object):
 
     def saveBotSetup(self):
         try:
-            backend.saveBotSetup(self.setupSavePushButton, self.setupLineEdit, self.timeoutSpinBox)
+            backend.saveBotSetup(self)
             self.setupSavePushButton.setText("Saved!")
             self.setupSavePushButton.setEnabled(False)
 
@@ -282,6 +290,199 @@ class Ui_AboutDialog(object):
         self.label_3.setText(_translate("AboutDialog", "Powered by: Python 3"))
         self.label_4.setText(_translate("AboutDialog", "GUI: PyQt5"))
 
+## SERVER TO SERVER DIALOG CLASS ##
+class Ui_SSDialog(object):
+    def setupUi(self, SSDialog):
+        SSDialog.setObjectName("SSDialog")
+        SSDialog.setFixedSize(391, 301)
+        self.horizontalLayoutWidget = QtWidgets.QWidget(SSDialog)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 371, 41))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label = QtWidgets.QLabel(self.horizontalLayoutWidget)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.horizontalLayout.addWidget(self.label)
+        self.sourceLineEdit = QtWidgets.QLineEdit(self.horizontalLayoutWidget)
+        self.sourceLineEdit.setObjectName("sourceLineEdit")
+        self.horizontalLayout.addWidget(self.sourceLineEdit)
+        self.horizontalLayoutWidget_2 = QtWidgets.QWidget(SSDialog)
+        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(10, 60, 371, 41))
+        self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label_2 = QtWidgets.QLabel(self.horizontalLayoutWidget_2)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName("label_2")
+        self.horizontalLayout_2.addWidget(self.label_2)
+        self.targetLineEdit = QtWidgets.QLineEdit(self.horizontalLayoutWidget_2)
+        self.targetLineEdit.setObjectName("targetLineEdit")
+        self.horizontalLayout_2.addWidget(self.targetLineEdit)
+        self.label_3 = QtWidgets.QLabel(SSDialog)
+        self.label_3.setGeometry(QtCore.QRect(10, 110, 111, 16))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_3.setFont(font)
+        self.label_3.setObjectName("label_3")
+        self.verticalLayoutWidget = QtWidgets.QWidget(SSDialog)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 160, 371, 88))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.attachmentCheckBox = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        self.attachmentCheckBox.setChecked(True)
+        self.attachmentCheckBox.setTristate(False)
+        self.attachmentCheckBox.setObjectName("attachmentCheckBox")
+        self.verticalLayout.addWidget(self.attachmentCheckBox)
+        self.emojiCheckBox = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        self.emojiCheckBox.setChecked(True)
+        self.emojiCheckBox.setObjectName("emojiCheckBox")
+        self.verticalLayout.addWidget(self.emojiCheckBox)
+        self.rolesCheckBox = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        self.rolesCheckBox.setChecked(True)
+        self.rolesCheckBox.setObjectName("rolesCheckBox")
+        self.verticalLayout.addWidget(self.rolesCheckBox)
+        self.label_4 = QtWidgets.QLabel(SSDialog)
+        self.label_4.setGeometry(QtCore.QRect(30, 130, 51, 21))
+        self.label_4.setObjectName("label_4")
+        self.messageSpinBox = QtWidgets.QSpinBox(SSDialog)
+        self.messageSpinBox.setGeometry(QtCore.QRect(80, 130, 71, 21))
+        self.messageSpinBox.setMaximum(999999)
+        self.messageSpinBox.setObjectName("messageSpinBox")
+        self.messageCheckBox = QtWidgets.QCheckBox(SSDialog)
+        self.messageCheckBox.setGeometry(QtCore.QRect(10, 130, 16, 21))
+        self.messageCheckBox.setText("")
+        self.messageCheckBox.setChecked(True)
+        self.messageCheckBox.setObjectName("messageCheckBox")
+        self.label_5 = QtWidgets.QLabel(SSDialog)
+        self.label_5.setGeometry(QtCore.QRect(160, 130, 231, 21))
+        self.label_5.setObjectName("label_5")
+        self.clonePushButton = QtWidgets.QPushButton(SSDialog)
+        self.clonePushButton.setGeometry(QtCore.QRect(10, 260, 371, 31))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.clonePushButton.setFont(font)
+        self.clonePushButton.setObjectName("clonePushButton")
+
+        self.retranslateUi(SSDialog)
+        QtCore.QMetaObject.connectSlotsByName(SSDialog)
+
+        ## SSDialog Functionalities ##
+        self.messageCheckBox.clicked.connect(self.messageCheckToggle)
+        self.clonePushButton.clicked.connect(self.startCloning)
+
+
+    def retranslateUi(self, SSDialog):
+        _translate = QtCore.QCoreApplication.translate
+        SSDialog.setWindowTitle(_translate("SSDialog", "Clone from Server to Server..."))
+        self.label.setText(_translate("SSDialog", "Source Server ID :"))
+        self.label_2.setText(_translate("SSDialog", "Target Server ID :"))
+        self.label_3.setText(_translate("SSDialog", "Include :"))
+        self.attachmentCheckBox.setText(_translate("SSDialog", "Message Attachments"))
+        self.emojiCheckBox.setText(_translate("SSDialog", "Custom Server Emojis"))
+        self.rolesCheckBox.setText(_translate("SSDialog", "Roles and Channel Permissions"))
+        self.label_4.setText(_translate("SSDialog", "The last"))
+        self.label_5.setText(_translate("SSDialog", "messages from each Text Channel. (0 = ALL)"))
+        self.clonePushButton.setText(_translate("SSDialog", "Start Cloning"))
+
+    def messageCheckToggle(self):
+        if not self.messageCheckBox.isChecked():
+            self.attachmentCheckBox.setCheckState(False)
+            self.attachmentCheckBox.setEnabled(False)
+        else:
+            self.attachmentCheckBox.setEnabled(True)
+
+    def startProgress(self):
+        ProgressDialog = QtWidgets.QDialog()
+        ProgressDialog.ui = Ui_ProgressDialog()
+        ProgressDialog.ui.setupUi(ProgressDialog)
+        ProgressDialog.exec_()
+        ProgressDialog.show()
+        return ProgressDialog
+
+    def startCloning(self):
+        try:
+            backend.startCloning(self)
+        except backend.EmptyField:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Some fields are left empty.")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+        except backend.InvalidFieldFormat:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Field entry format is invalid.")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+        except backend.BotNotPresentInServer:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("The Bot is not present in the indicated server(s).")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+        except backend.SameSourceAndTarget:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("Source and Target server IDs cannot be the same.")
+            msg.setIcon(QMessageBox.Critical)
+            msg.exec_()
+
+## PROGRESS DIALOG CLASS ##
+class Ui_ProgressDialog(object):
+    def setupUi(self, ProgressDialog):
+        ProgressDialog.setObjectName("ProgressDialog")
+        ProgressDialog.setFixedSize(400, 72)
+        ProgressDialog.setWindowFlags(
+            QtCore.Qt.Window |
+            QtCore.Qt.CustomizeWindowHint |
+            QtCore.Qt.WindowTitleHint |
+            QtCore.Qt.WindowMinimizeButtonHint
+            )
+        self.label = QtWidgets.QLabel(ProgressDialog)
+        self.label.setGeometry(QtCore.QRect(10, 10, 47, 16))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.progressBar = QtWidgets.QProgressBar(ProgressDialog)
+        self.progressBar.setEnabled(True)
+        self.progressBar.setGeometry(QtCore.QRect(10, 32, 381, 31))
+        font = QtGui.QFont()
+        font.setBold(False)
+        font.setWeight(50)
+        self.progressBar.setFont(font)
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.progressBar.setTextVisible(True)
+        self.progressBar.setOrientation(QtCore.Qt.Horizontal)
+        self.progressBar.setObjectName("progressBar")
+        self.statusLabel = QtWidgets.QLabel(ProgressDialog)
+        self.statusLabel.setGeometry(QtCore.QRect(70, 10, 321, 16))
+        self.statusLabel.setText("")
+        self.statusLabel.setObjectName("statusLabel")
+
+
+        self.retranslateUi(ProgressDialog)
+        QtCore.QMetaObject.connectSlotsByName(ProgressDialog)
+
+    def retranslateUi(self, ProgressDialog):
+        _translate = QtCore.QCoreApplication.translate
+        ProgressDialog.setWindowTitle(_translate("ProgressDialog", "Task in Progress..."))
+        self.label.setText(_translate("ProgressDialog", "Status:"))
 
 def start():
 
